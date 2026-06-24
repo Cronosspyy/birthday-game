@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>Cozy Lily Garden Game - Happy Birthday!</title>
+    <meta name="description" content="A playable cozy 3D planet game. Explore the lily garden, collect letters, plant lilies, and make wishes bloom!" />
+    <!-- Link the CSS file correctly -->
+    <link rel="stylesheet" href="/src/style.css" />
+    <!-- Google Fonts for premium typography -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Sacramento&family=Caveat:wght@400;700&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- 3D WebGL Canvas -->
+    <canvas id="webgl-canvas"></canvas>
+
+    <!-- Ambient Audio Element -->
+    <audio id="bg-music" loop preload="auto"></audio>
+
+    <!-- Loader Overlay -->
+    <div id="loader-overlay" class="overlay-container">
+      <div class="loader-backdrop-glow"></div>
+      <div class="loader-content">
+        <h1 class="loader-title">Cozy Lily Garden</h1>
+        <p class="loader-subtitle">Growing a playable tiny planet of wishes...</p>
+        
+        <!-- Custom stylized water lily loading animation -->
+        <div class="lily-loader">
+          <div class="petal petal-1"></div>
+          <div class="petal petal-2"></div>
+          <div class="petal petal-3"></div>
+          <div class="petal petal-4"></div>
+          <div class="petal petal-5"></div>
+          <div class="lily-center"></div>
+        </div>
+
+        <div class="progress-bar-container">
+          <div id="loader-progress" class="progress-bar" style="width: 0%;"></div>
+        </div>
+        <p id="loader-status-text" class="loader-status">Loading garden assets...</p>
+        <button id="btn-enter-experience" class="neon-btn disabled" disabled>START PLAYING 🎮</button>
+      </div>
+    </div>
+
+    <!-- Main UI Overlays -->
+    <div id="ui-container" class="hidden">
+      <!-- Top Header / Greeting -->
+      <header class="app-header">
+        <div class="glow-logo">Lily Garden</div>
+        <div id="quest-indicator" class="progress-indicator">Collect wishes scattered on grass</div>
+        <div id="garden-stats" class="sub-indicator">0/4 Lilies Bloomed</div>
+      </header>
+
+      <!-- Audio Pill Indicator (Top Right) -->
+      <div id="audio-pill" class="glass-panel audio-pill-container">
+        <button id="btn-music-toggle" class="audio-toggle-btn" title="Play/Pause music">
+          <div class="sound-wave active" id="sound-wave-bars">
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+        </button>
+        <div class="audio-track-details">
+          <span id="audio-track-title" class="track-title-text">Lofi Forest Stream</span>
+          <label for="music-file-upload" class="change-track-btn">
+            Change Track
+            <input type="file" id="music-file-upload" accept="audio/*">
+          </label>
+        </div>
+      </div>
+
+      <!-- Controls Guide (Bottom Left Desktop) -->
+      <div id="desktop-controls-guide" class="controls-guide glass-panel">
+        <h3>How to Play 🎮</h3>
+        <ul>
+          <li><span>W, A, S, D</span> / <span>Arrows</span> : Move</li>
+          <li><span>Mouse Drag</span> : Orbit Look</li>
+          <li><span>E</span> / <span>Click</span> : Pick Up Letter</li>
+          <li><span>Space</span> / <span>Click</span> : Plant Lily</li>
+        </ul>
+      </div>
+
+      <!-- Interaction Prompt Box (Center Screen Popup) -->
+      <div id="interaction-prompt" class="action-prompt-box hidden">
+        <div class="prompt-key" id="prompt-action-key">E</div>
+        <span class="prompt-text" id="prompt-action-text">Interact</span>
+      </div>
+
+      <!-- Virtual Joystick and Action Buttons (Mobile Overlay) -->
+      <div id="mobile-controls-container" class="mobile-only-overlay">
+        <!-- Virtual Joystick Left -->
+        <div class="joystick-boundary" id="joystick-zone">
+          <div class="joystick-handle" id="joystick-knob"></div>
+        </div>
+        
+        <!-- Action Buttons Right -->
+        <div class="mobile-action-buttons">
+          <button id="btn-mobile-interact" class="mobile-action-btn interact" title="Interact / Pick Up">
+            <span>E</span>
+          </button>
+          <button id="btn-mobile-plant" class="mobile-action-btn plant" title="Plant Lily">
+            <span>Space</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Floating Bottom Control Toolbar (Bottom Center) -->
+      <nav id="bottom-toolbar" class="glass-panel toolbar-container">
+        <button id="btn-reset-game" class="toolbar-btn" title="Reset game and replay">
+          <svg class="svg-icon" viewBox="0 0 24 24">
+            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+          </svg>
+          <span>Reset Game</span>
+        </button>
+
+        <button id="btn-toggle-wishes" class="toolbar-btn" title="View wishes panel">
+          <svg class="svg-icon" viewBox="0 0 24 24">
+            <path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zM6 9h12v2H6V9zm8 5H6v-2h8v2zm4-6H6V6h12v2z"/>
+          </svg>
+          <span>Wishes</span>
+        </button>
+
+        <button id="btn-trigger-celebrate" class="toolbar-btn highlight-btn hidden" id="btn-celebrate-shortcut" title="Celebrate!">
+          <svg class="svg-icon" viewBox="0 0 24 24">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z"/>
+          </svg>
+          <span>Celebrate</span>
+        </button>
+      </nav>
+
+      <!-- Wishes Side Drawer (Left) -->
+      <aside id="wishes-panel" class="glass-panel drawer left-drawer">
+        <div class="drawer-header">
+          <h2>Wishes Log</h2>
+          <button id="btn-close-wishes" class="close-btn">&times;</button>
+        </div>
+        <div class="drawer-body">
+          <p class="section-hint">Explore the planet as the Mail Bunny to find all 4 letters and plant them as water lilies in the pond!</p>
+          
+          <!-- Wishes List -->
+          <div id="wishes-list" class="wishes-container">
+            <!-- Dynamically populated -->
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <!-- Interactive Polaroid Wish Focus Overlay (Modal) -->
+    <div id="memory-modal" class="modal-overlay">
+      <div id="modal-card" class="envelope-card-container">
+        <div class="envelope-flap"></div>
+        <div class="letter-card glass-panel">
+          <button id="btn-close-modal" class="close-btn">&times;</button>
+          
+          <div class="letter-inner">
+            <div class="letter-stamp">💌</div>
+            <div class="letter-header">
+              <span class="letter-date" id="modal-date">June 24, 2026</span>
+              <h2 class="letter-sender-title" id="modal-sender">From Sarah</h2>
+            </div>
+            
+            <div class="letter-body">
+              <p id="modal-description" class="letter-text">Happy Birthday! Wishing you a year ahead full of love, laughter, and endless adventure! 🎂✨</p>
+            </div>
+            
+            <div class="letter-footer">
+              <p class="signature">With Love,</p>
+              <p id="modal-signature-sender" class="signature-name">Sarah</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final Celebration Overlay -->
+    <div id="celebration-overlay" class="overlay-container hidden">
+      <div class="celebration-content">
+        <h2 class="wishes-hero-title">Happy Birthday! 🌸</h2>
+        <p class="wishes-hero-subtitle">You found all the letters and bloomed the garden! Make a wish and blow out the candle.</p>
+        
+        <!-- Interactive Candle Blowing Cake -->
+        <div class="cake-container">
+          <div class="cake-drape"></div>
+          <div class="cake-plate"></div>
+          <div class="cake-body">
+            <div class="frosting"></div>
+          </div>
+          <!-- candle -->
+          <div class="ui-candle" id="ui-candle-elem">
+            <div class="candle-flame" id="ui-candle-flame"></div>
+            <div class="candle-stick"></div>
+          </div>
+        </div>
+        <p class="cake-hint" id="cake-blow-hint">Click the candle to blow it out!</p>
+        
+        <div class="celebration-buttons">
+          <button id="btn-celebrate-more" class="neon-btn solid-pink">Burst Confetti! 🎉</button>
+          <button id="btn-back-to-garden" class="neon-btn secondary-btn">Return to Garden</button>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js?v=3"></script>
+  </body>
+</html>
