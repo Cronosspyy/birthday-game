@@ -55,8 +55,8 @@ let previousMousePos = { x: 0, y: 0 };
 let bgMusicElement = null;
 let isMusicPlaying = false;
 const LOFI_TRACKS = [
-  { title: "Dreamy Pond", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" },
-  { title: "Cozy Planet Lofi", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+  { title: "Dreamy Pond", url: "public/music/bg music.mp3" },
+  { title: "Cozy Planet Lofi", url: "public/music/bg music.mp3" }
 ];
 let currentTrackIndex = 0;
 
@@ -102,7 +102,7 @@ window.addEventListener('DOMContentLoaded', () => {
   initGardenWorld();
   initUI();
   initControls();
-  
+
   animate();
   simulateLoading();
 });
@@ -130,17 +130,17 @@ function simulateLoading() {
 function initEngine() {
   const canvas = document.getElementById('webgl-canvas');
   scene = new THREE.Scene();
-  
+
   // Bright warm peach pastel sky color
   scene.background = new THREE.Color(0xffeedd);
-  
+
   // Fog blends with sky color for low-poly atmospheric depth
   scene.fog = new THREE.FogExp2(0xffeedd, 0.015);
-  
+
   // Camera Setup (lower FOV for clean isomorphic feel)
   camera = new THREE.PerspectiveCamera(40, window.innerWidth / window.innerHeight, 0.1, 1000);
   camera.position.set(0, 15, 25);
-  
+
   // Renderer Setup
   renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
   renderer.setSize(window.innerWidth, window.innerHeight);
@@ -149,13 +149,13 @@ function initEngine() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.0;
-  
+
   clock = new THREE.Clock();
 
   // Lights: Soft warm golden sunset lighting
   const ambientLight = new THREE.AmbientLight(0xfff5ea, 0.55);
   scene.add(ambientLight);
-  
+
   const sunLight = new THREE.DirectionalLight(0xffedd5, 1.25);
   sunLight.position.set(20, 30, 15);
   sunLight.castShadow = true;
@@ -163,7 +163,7 @@ function initEngine() {
   sunLight.shadow.mapSize.height = 2048;
   sunLight.shadow.bias = -0.0005;
   scene.add(sunLight);
-  
+
   // Soft pastel violet bounce light from below
   const groundBounceLight = new THREE.DirectionalLight(0xdec9e9, 0.5);
   groundBounceLight.position.set(-10, -20, -10);
@@ -181,19 +181,19 @@ function initGardenWorld() {
   // 1. Planet sphere geometry with indentation
   const planetGeom = new THREE.IcosahedronGeometry(10, 4);
   const posAttr = planetGeom.attributes.position;
-  
+
   for (let i = 0; i < posAttr.count; i++) {
     const x = posAttr.getX(i);
     const y = posAttr.getY(i);
     const z = posAttr.getZ(i);
-    const r = Math.sqrt(x*x + y*y + z*z);
-    
+    const r = Math.sqrt(x * x + y * y + z * z);
+
     // Smooth natural hills noise
     const noise = (Math.sin(x * 0.5) + Math.cos(y * 0.5) + Math.sin(z * 0.5)) * 0.12;
-    
+
     // Polar angle to indent top polar cap for water pond
     const theta = Math.acos(y / r);
-    
+
     let indentFactor = 1.0;
     if (theta < 0.38) {
       indentFactor = 0.94; // pond bottom
@@ -201,7 +201,7 @@ function initGardenWorld() {
       const t = (theta - 0.38) / (0.50 - 0.38);
       indentFactor = 0.94 + 0.06 * t; // slope
     }
-    
+
     const finalR = r * indentFactor + noise;
     const rScale = finalR / r;
     posAttr.setXYZ(i, x * rScale, y * rScale, z * rScale);
@@ -253,63 +253,63 @@ function initGardenWorld() {
 function spawnPastelTrees() {
   const treeCount = 18;
   const colors = [0xffcad4, 0xb3e5fc, 0xd8f3dc, 0xffe5ec]; // pastel pink, blue, green, cream
-  
+
   const trunkGeom = new THREE.CylinderGeometry(0.12, 0.2, 1.2, 5);
   trunkGeom.translate(0, 0.6, 0);
   const trunkMat = new THREE.MeshStandardMaterial({ color: 0x9a7b56, roughness: 0.9, flatShading: true });
-  
+
   for (let i = 0; i < treeCount; i++) {
     // Distribute trees on land (theta > 0.65 to keep away from pond)
     const theta = 0.65 + Math.random() * 1.8;
     const phi = Math.random() * Math.PI * 2;
     const r = 9.9;
-    
+
     const x = r * Math.sin(theta) * Math.cos(phi);
     const y = r * Math.cos(theta);
     const z = r * Math.sin(theta) * Math.sin(phi);
-    
+
     const treeGroup = new THREE.Group();
     treeGroup.position.set(x, y, z);
-    
+
     // Align tree up with sphere normal
     const normal = new THREE.Vector3(x, y, z).normalize();
     const up = new THREE.Vector3(0, 1, 0);
     const quat = new THREE.Quaternion().setFromUnitVectors(up, normal);
     treeGroup.quaternion.copy(quat);
-    
+
     // Trunk
     const trunk = new THREE.Mesh(trunkGeom, trunkMat);
     trunk.castShadow = true;
     treeGroup.add(trunk);
-    
+
     // Round Low-Poly Foliage (Concentric Spheres)
     const folMat = new THREE.MeshStandardMaterial({
       color: colors[i % colors.length],
       roughness: 0.9,
       flatShading: true
     });
-    
+
     // Main leaf cluster
     const mainFoliage = new THREE.Mesh(new THREE.DodecahedronGeometry(0.9, 1), folMat);
     mainFoliage.position.y = 1.6;
     mainFoliage.castShadow = true;
     treeGroup.add(mainFoliage);
-    
+
     // Side puff cluster
     const puff = new THREE.Mesh(new THREE.DodecahedronGeometry(0.55, 1), folMat);
     puff.position.set(0.4, 1.4, -0.2);
     puff.castShadow = true;
     treeGroup.add(puff);
-    
+
     const puff2 = new THREE.Mesh(new THREE.DodecahedronGeometry(0.45, 1), folMat);
     puff2.position.set(-0.35, 1.8, 0.25);
     puff2.castShadow = true;
     treeGroup.add(puff2);
-    
+
     // Scale bounce on spawn
     treeGroup.scale.set(0.001, 0.001, 0.001);
     gsap.to(treeGroup.scale, { x: 1, y: 1, z: 1, duration: 1.2 + Math.random() * 0.5, ease: "elastic.out(1, 0.8)", delay: i * 0.03 });
-    
+
     planetGroup.add(treeGroup);
     trees.push(treeGroup);
   }
@@ -320,25 +320,25 @@ function spawnFireflies() {
   const count = 35;
   const ffGeom = new THREE.SphereGeometry(0.06, 4, 4);
   const ffMat = new THREE.MeshBasicMaterial({ color: 0xfde047 });
-  
+
   for (let i = 0; i < count; i++) {
     const ff = new THREE.Mesh(ffGeom, ffMat);
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(Math.random() * 2 - 1);
     const r = 10.2 + Math.random() * 1.5;
-    
+
     ff.position.set(
       r * Math.sin(phi) * Math.cos(theta),
       r * Math.cos(phi),
       r * Math.sin(phi) * Math.sin(theta)
     );
-    
+
     ff.userData = {
       basePosition: ff.position.clone(),
       seed: Math.random() * 100,
       speed: 0.3 + Math.random() * 0.4
     };
-    
+
     planetGroup.add(ff);
     fireflies.push(ff);
   }
@@ -349,18 +349,18 @@ function spawnStarfield() {
   const count = 800;
   const geom = new THREE.BufferGeometry();
   const positions = new Float32Array(count * 3);
-  
+
   for (let i = 0; i < count; i++) {
     const radius = 160 + Math.random() * 40;
     const theta = Math.random() * Math.PI * 2;
     const phi = Math.acos(Math.random() * 2 - 1);
-    
+
     positions[i * 3] = radius * Math.sin(phi) * Math.cos(theta);
     positions[i * 3 + 1] = radius * Math.cos(phi);
     positions[i * 3 + 2] = radius * Math.sin(phi) * Math.sin(theta);
   }
   geom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-  
+
   const starMat = new THREE.PointsMaterial({
     color: 0xffcad4,
     size: 0.6,
@@ -376,11 +376,11 @@ function spawnStarfield() {
 function spawnPlayerBunny() {
   playerMesh = new THREE.Group();
   playerMesh.name = "player-bunny";
-  
+
   const whiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, flatShading: true });
   const pinkMat = new THREE.MeshStandardMaterial({ color: 0xffb5a7, roughness: 0.9, flatShading: true });
   const darkMat = new THREE.MeshStandardMaterial({ color: 0x47322b, roughness: 0.9, flatShading: true });
-  
+
   // 1. Body (cylinder mesh, pivot at base, positioned at y = 0.35)
   const bodyGeom = new THREE.CylinderGeometry(0.3, 0.42, 0.7, 16);
   bodyMesh = new THREE.Mesh(bodyGeom, whiteMat);
@@ -388,7 +388,7 @@ function spawnPlayerBunny() {
   bodyMesh.castShadow = true;
   bodyMesh.receiveShadow = true;
   playerMesh.add(bodyMesh);
-  
+
   // 2. Bag (slung on side of body)
   const bagGeom = new THREE.BoxGeometry(0.18, 0.24, 0.3);
   const bagMat = new THREE.MeshStandardMaterial({ color: 0x8a5a36, roughness: 0.95, flatShading: true });
@@ -396,7 +396,7 @@ function spawnPlayerBunny() {
   bag.position.set(-0.35, 0.1, -0.05); // relative to body center
   bag.castShadow = true;
   bodyMesh.add(bag);
-  
+
   // 3. Strap (wrapped around body)
   const strapGeom = new THREE.CylinderGeometry(0.4, 0.4, 0.08, 16);
   strapGeom.scale(0.8, 1, 1);
@@ -405,23 +405,23 @@ function spawnPlayerBunny() {
   const strap = new THREE.Mesh(strapGeom, strapMat);
   strap.position.set(0, 0.1, 0.05);
   bodyMesh.add(strap);
-  
+
   // 4. Head (child of body Mesh)
   const headGeom = new THREE.SphereGeometry(0.35, 16, 16);
   headMesh = new THREE.Mesh(headGeom, whiteMat);
   headMesh.position.set(0, 0.55, 0.05); // sits on top of body
   headMesh.castShadow = true;
   bodyMesh.add(headMesh);
-  
+
   // 5. Floppy Ears (children of head Mesh)
   const earGeom = new THREE.CylinderGeometry(0.04, 0.06, 0.4, 12);
   earGeom.scale(1, 1, 0.5);
   earGeom.translate(0, 0.2, 0); // pivot from base
-  
+
   const earInnerGeom = new THREE.CylinderGeometry(0.015, 0.03, 0.3, 12);
   earInnerGeom.scale(1, 1, 0.25);
   earInnerGeom.translate(0, 0.18, 0.02);
-  
+
   // Left Ear
   leftEar = new THREE.Group();
   leftEar.position.set(-0.16, 0.3, 0.0); // relative to head center
@@ -431,7 +431,7 @@ function spawnPlayerBunny() {
   leftEar.add(lEarOuter);
   leftEar.add(lEarInner);
   headMesh.add(leftEar);
-  
+
   // Right Ear
   rightEar = new THREE.Group();
   rightEar.position.set(0.16, 0.3, 0.0);
@@ -441,7 +441,7 @@ function spawnPlayerBunny() {
   rightEar.add(rEarOuter);
   rightEar.add(rEarInner);
   headMesh.add(rightEar);
-  
+
   // 6. Eyes (children of head Mesh)
   const eyeGeom = new THREE.SphereGeometry(0.04, 8, 8);
   const lEye = new THREE.Mesh(eyeGeom, darkMat);
@@ -450,7 +450,7 @@ function spawnPlayerBunny() {
   rEye.position.set(0.14, 0.08, 0.3);
   headMesh.add(lEye);
   headMesh.add(rEye);
-  
+
   // 7. Cheek Blush (children of head Mesh)
   const blushGeom = new THREE.SphereGeometry(0.05, 8, 8);
   blushGeom.scale(1, 0.5, 1);
@@ -460,19 +460,19 @@ function spawnPlayerBunny() {
   rBlush.position.set(0.22, -0.04, 0.27);
   headMesh.add(lBlush);
   headMesh.add(rBlush);
-  
+
   // 8. Small legs (children of playerMesh directly, pivot at top)
   const legGeom = new THREE.CapsuleGeometry(0.07, 0.18, 8, 16);
   legGeom.translate(0, -0.09, 0); // pivot at top joint
-  
+
   leftLeg = new THREE.Mesh(legGeom, whiteMat);
   leftLeg.position.set(-0.15, 0.1, 0.0);
   playerMesh.add(leftLeg);
-  
+
   rightLeg = new THREE.Mesh(legGeom, whiteMat);
   rightLeg.position.set(0.15, 0.1, 0.0);
   playerMesh.add(rightLeg);
-  
+
   // Set starting position and orientation
   playerMesh.position.copy(playerPos);
   planetGroup.add(playerMesh);
@@ -481,7 +481,7 @@ function spawnPlayerBunny() {
 // --- Procedural Letter Scroll Mesh ---
 function createLetterScrollMesh() {
   const scrollGroup = new THREE.Group();
-  
+
   // Rolled paper cylinder (parchment)
   const paperGeom = new THREE.CylinderGeometry(0.1, 0.1, 0.48, 8);
   paperGeom.rotateZ(Math.PI / 2); // lie horizontal
@@ -493,14 +493,14 @@ function createLetterScrollMesh() {
   const paper = new THREE.Mesh(paperGeom, paperMat);
   paper.castShadow = true;
   scrollGroup.add(paper);
-  
+
   // Red ribbon wrap around middle
   const ribbonGeom = new THREE.CylinderGeometry(0.108, 0.108, 0.08, 8);
   ribbonGeom.rotateZ(Math.PI / 2);
   const ribbonMat = new THREE.MeshBasicMaterial({ color: 0xe63946 }); // red ribbon
   const ribbon = new THREE.Mesh(ribbonGeom, ribbonMat);
   scrollGroup.add(ribbon);
-  
+
   return scrollGroup;
 }
 
@@ -511,18 +511,18 @@ function createLilyPadMesh(radius = 0.55) {
   const startAngle = wedgeAngle / 2;
   const endAngle = Math.PI * 2 - wedgeAngle / 2;
   const segments = 20;
-  
+
   padShape.moveTo(0, 0);
   for (let i = 0; i <= segments; i++) {
     const a = startAngle + (i / segments) * (endAngle - startAngle);
     padShape.lineTo(Math.cos(a) * radius, Math.sin(a) * radius);
   }
   padShape.closePath();
-  
+
   const extrudeSettings = { depth: 0.02, bevelEnabled: true, bevelSegments: 1, steps: 1, bevelSize: 0.005, bevelThickness: 0.005 };
   const padGeom = new THREE.ExtrudeGeometry(padShape, extrudeSettings);
   padGeom.rotateX(-Math.PI / 2);
-  
+
   const padMat = new THREE.MeshStandardMaterial({
     color: 0x38b000, // vibrant pastel-like leaf green
     roughness: 0.9,
@@ -537,10 +537,10 @@ function createLilyPadMesh(radius = 0.55) {
 // --- Generate 3D Procedural Lily Flower ---
 function createLilyFlowerMesh(colorName = "pink") {
   const flowerGroup = new THREE.Group();
-  
+
   let petalColorHex = 0xffb5a7;
   let emissiveColorHex = 0xff7096;
-  
+
   if (colorName === "white") {
     petalColorHex = 0xf8fafc;
     emissiveColorHex = 0xe2e8f0;
@@ -567,8 +567,8 @@ function createLilyFlowerMesh(colorName = "pink") {
 
   const layers = [
     { count: 12, angle: 0.2, radius: 0.09 },
-    { count: 8,  angle: 0.6, radius: 0.05 },
-    { count: 6,  angle: 1.0, radius: 0.02 }
+    { count: 8, angle: 0.6, radius: 0.05 },
+    { count: 6, angle: 1.0, radius: 0.02 }
   ];
 
   layers.forEach((layer) => {
@@ -586,7 +586,7 @@ function createLilyFlowerMesh(colorName = "pink") {
   const stMat = new THREE.MeshBasicMaterial({ color: 0xfec89a });
   const stGeom = new THREE.CylinderGeometry(0.015, 0.015, 0.12, 4);
   stGeom.translate(0, 0.06, 0);
-  
+
   for (let i = 0; i < 6; i++) {
     const st = new THREE.Mesh(stGeom, stMat);
     const angle = (i / 6) * Math.PI * 2;
@@ -606,7 +606,7 @@ function spawnBirthdayCake() {
   birthdayCakeGroup = new THREE.Group();
   birthdayCakeGroup.name = "birthday-cake";
   birthdayCakeGroup.position.set(0, 9.66, 0); // Spawns directly at the top pole (pond center)
-  
+
   // Plate
   const plateGeom = new THREE.CylinderGeometry(0.8, 0.8, 0.05, 12);
   const plateMat = new THREE.MeshStandardMaterial({ color: 0xefdfbb, roughness: 0.5 });
@@ -655,7 +655,7 @@ function spawnBirthdayCake() {
   // Scale grow animation
   birthdayCakeGroup.scale.set(0.001, 0.001, 0.001);
   planetGroup.add(birthdayCakeGroup);
-  
+
   gsap.to(birthdayCakeGroup.scale, {
     x: 1.0,
     y: 1.0,
@@ -663,7 +663,7 @@ function spawnBirthdayCake() {
     duration: 1.8,
     ease: "elastic.out(1, 0.75)"
   });
-  
+
   // Confetti burst on spawn
   confetti({
     particleCount: 50,
@@ -678,10 +678,10 @@ function loadGameEntities() {
   // Clear any existing entities
   scrollMeshes.forEach(mesh => planetGroup.remove(mesh));
   scrollMeshes.clear();
-  
+
   lilyObjects.forEach(mesh => planetGroup.remove(mesh));
   lilyObjects.clear();
-  
+
   plantingSpotRings.forEach(mesh => planetGroup.remove(mesh));
   plantingSpotRings.clear();
 
@@ -692,13 +692,13 @@ function loadGameEntities() {
 
   carriedWish = null;
   nearbyInteractable = null;
-  
+
   // Reset character position to top next to pond
   playerPos.set(0, 10, 0);
   playerVelocity.set(0, 0, 0);
   playerForward.set(0, 0, 1);
   playerSpeed = 0;
-  
+
   if (playerMesh) {
     playerMesh.position.copy(playerPos);
     playerMesh.quaternion.set(0, 0, 0, 1);
@@ -708,46 +708,46 @@ function loadGameEntities() {
   Object.keys(keys).forEach(k => keys[k] = false);
 
   const wishes = getWishes();
-  
+
   wishes.forEach(wish => {
     // 1. Spawning Scrolls (if not collected and not planted)
     if (!wish.collected && !wish.planted) {
       const scroll = createLetterScrollMesh();
       const pos = wish.landPosition;
       scroll.position.set(pos.x, pos.y, pos.z);
-      
+
       // Orient normal to surface
       const normal = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
       const up = new THREE.Vector3(0, 1, 0);
       const quat = new THREE.Quaternion().setFromUnitVectors(up, normal);
       scroll.quaternion.copy(quat);
-      
+
       planetGroup.add(scroll);
       scrollMeshes.set(wish.id, scroll);
     }
-    
+
     // 2. Spawning Lily Pads/Flowers (if planted)
     if (wish.planted) {
       const lilyGroup = new THREE.Group();
       const pos = wish.pondPosition;
       lilyGroup.position.set(pos.x, pos.y, pos.z);
-      
+
       const normal = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
       const up = new THREE.Vector3(0, 1, 0);
       const quat = new THREE.Quaternion().setFromUnitVectors(up, normal);
       lilyGroup.quaternion.copy(quat);
-      
+
       const pad = createLilyPadMesh();
       lilyGroup.add(pad);
-      
+
       const flower = createLilyFlowerMesh(wish.color);
       flower.position.y = 0.03;
       lilyGroup.add(flower);
-      
+
       planetGroup.add(lilyGroup);
       lilyObjects.set(wish.id, lilyGroup);
     }
-    
+
     // 3. Spawning Planting Rings (if collected but not planted)
     if (wish.collected && !wish.planted) {
       createPlantingRing(wish);
@@ -771,7 +771,7 @@ function createPlantingRing(wish) {
 
   const ringGeom = new THREE.RingGeometry(0.48, 0.55, 16);
   ringGeom.rotateX(-Math.PI / 2); // lay flat
-  
+
   // Emissive warm gold glowing ring material
   const ringMat = new THREE.MeshBasicMaterial({
     color: 0xfbbf24,
@@ -779,11 +779,11 @@ function createPlantingRing(wish) {
     opacity: 0.8,
     side: THREE.DoubleSide
   });
-  
+
   const ringMesh = new THREE.Mesh(ringGeom, ringMat);
   const pos = wish.pondPosition;
   ringMesh.position.set(pos.x, pos.y, pos.z);
-  
+
   const normal = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
   const up = new THREE.Vector3(0, 1, 0);
   const quat = new THREE.Quaternion().setFromUnitVectors(up, normal);
@@ -862,14 +862,14 @@ function updateQuestStatus() {
 
   // Determine active target scroll
   const carried = wishes.find(w => w.collected && !w.planted);
-  
+
   if (carried) {
     carriedWish = carried;
     questIndicator.innerText = `Carrying ${carried.sender}'s letter. Take it to the pond!`;
   } else {
     carriedWish = null;
     const nextUncollected = wishes.find(w => !w.collected && !w.planted);
-    
+
     if (nextUncollected) {
       questIndicator.innerText = `Find ${nextUncollected.sender}'s letter on the grass!`;
     } else if (plantedCount < 4) {
@@ -897,7 +897,7 @@ function updateQuestStatus() {
 function initControls() {
   window.addEventListener('keydown', (e) => {
     if (e.key in keys) keys[e.key] = true;
-    
+
     // Action key bindings
     if (e.key === 'e' || e.key === 'E') {
       handleInteractAction();
@@ -937,11 +937,11 @@ function initControls() {
     const rect = joyZone.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
     const centerY = rect.top + rect.height / 2;
-    
+
     const dx = touch.clientX - centerX;
     const dy = touch.clientY - centerY;
-    const dist = Math.sqrt(dx*dx + dy*dy);
-    
+    const dist = Math.sqrt(dx * dx + dy * dy);
+
     if (dist === 0) {
       joystickDir = { x: 0, y: 0 };
       return;
@@ -949,11 +949,11 @@ function initControls() {
 
     const angle = Math.atan2(dy, dx);
     const limitDist = Math.min(dist, maxLimit);
-    
+
     // Joystick vector values clamped -1 to 1
     joystickDir.x = Math.cos(angle) * (limitDist / maxLimit);
     joystickDir.y = Math.sin(angle) * (limitDist / maxLimit);
-    
+
     // Move visual handle
     joyKnob.style.transform = `translate(${Math.cos(angle) * limitDist}px, ${Math.sin(angle) * limitDist}px)`;
   }
@@ -973,7 +973,7 @@ function initControls() {
     if (!isDraggingCamera) return;
     const deltaX = e.clientX - previousMousePos.x;
     const deltaY = e.clientY - previousMousePos.y;
-    
+
     camYawOffset -= deltaX * 0.005;
     // limit pitch angles to avoid going directly overhead or below ground
     camPitchOffset = Math.max(0.02, Math.min(1.2, camPitchOffset + deltaY * 0.005));
@@ -1087,14 +1087,14 @@ function updatePlayerPhysics(delta, elapsed) {
     // Project camera axes onto the tangent plane at the player's position
     const camDir = new THREE.Vector3();
     camera.getWorldDirection(camDir);
-    
+
     // Camera Right: Camera forward cross Up
     const camRight = new THREE.Vector3().crossVectors(camDir, camera.up).normalize();
-    
+
     // Project vectors onto the tangent plane (orthogonal to playerUp normal)
     const forwardProj = camDir.clone().projectOnPlane(playerUp).normalize();
     const rightProj = camRight.clone().projectOnPlane(playerUp).normalize();
-    
+
     // Combined input direction
     inputDirection.addScaledVector(rightProj, moveX);
     inputDirection.addScaledVector(forwardProj, moveZ);
@@ -1154,7 +1154,7 @@ function updatePlayerPhysics(delta, elapsed) {
     // Leg walking cycle
     leftLeg.rotation.x = Math.sin(cycle) * 0.5;
     rightLeg.rotation.x = -Math.sin(cycle) * 0.5;
-    
+
     // Float ears back if swimming
     if (isSwimming) {
       leftEar.rotation.x = 0.3;
@@ -1200,7 +1200,7 @@ function updateThirdPersonCamera(delta) {
   const D = 9.75;
   const distance = D * Math.cos(camPitchOffset);
   const height = D * Math.sin(camPitchOffset);
-  
+
   const targetCamPos = playerPos.clone()
     .addScaledVector(lookDir, distance)
     .addScaledVector(playerUp, height);
@@ -1212,14 +1212,14 @@ function updateThirdPersonCamera(delta) {
 
   const targetCamDir = targetCamPos.clone().normalize();
   const currentCamDir = camera.position.clone().normalize();
-  
+
   const newCamDir = new THREE.Vector3().copy(currentCamDir).lerp(targetCamDir, 0.07).normalize();
-  
+
   camera.position.copy(newCamDir).multiplyScalar(newCamDist);
-  
+
   // Set camera Up direction
   camera.up.lerp(camUp, 0.1);
-  
+
   // Look at player center (slightly offset vertically)
   const lookTarget = playerPos.clone().addScaledVector(playerUp, 0.6);
   camera.lookAt(lookTarget);
@@ -1235,7 +1235,7 @@ function checkInteractionDistances() {
   scrollMeshes.forEach((mesh, wishId) => {
     const w = wishes.find(x => x.id === wishId);
     if (!w) return;
-    
+
     const dist = playerPos.distanceTo(mesh.position);
     if (dist < minDistance) {
       minDistance = dist;
@@ -1278,7 +1278,7 @@ function checkInteractionDistances() {
   // Update UI prompt panel
   if (nearbyInteractable) {
     interactionPrompt.classList.remove('hidden');
-    
+
     if (nearbyInteractable.type === 'scroll') {
       promptKey.innerText = 'E';
       promptText.innerText = `Pick up ${nearbyInteractable.data.sender}'s letter`;
@@ -1305,29 +1305,29 @@ function handleInteractAction() {
     const wishId = nearbyInteractable.id;
     // Update data state
     collectWish(wishId);
-    
+
     // Remove mesh from world
     const mesh = scrollMeshes.get(wishId);
     if (mesh) planetGroup.remove(mesh);
     scrollMeshes.delete(wishId);
-    
+
     // Add planting ring target
     const wish = nearbyInteractable.data;
     createPlantingRing(wish);
 
     // Trigger visual float effects
     confetti({ particleCount: 15, spread: 30, origin: { y: 0.8 } });
-    
+
     updateQuestStatus();
   }
   else if (nearbyInteractable.type === 'lily') {
     const wishId = nearbyInteractable.id;
     // Mark as read
     readWish(wishId);
-    
+
     // Open Polaroid Modal
     openWishModal(nearbyInteractable.data);
-    
+
     updateQuestStatus();
   }
 }
@@ -1351,19 +1351,19 @@ function handlePlantAction() {
     const lilyGroup = new THREE.Group();
     const pos = wish.pondPosition;
     lilyGroup.position.set(pos.x, pos.y, pos.z);
-    
+
     const normal = new THREE.Vector3(pos.x, pos.y, pos.z).normalize();
     const up = new THREE.Vector3(0, 1, 0);
     const quat = new THREE.Quaternion().setFromUnitVectors(up, normal);
     lilyGroup.quaternion.copy(quat);
-    
+
     const pad = createLilyPadMesh();
     lilyGroup.add(pad);
-    
+
     const flower = createLilyFlowerMesh(wish.color);
     flower.position.y = 0.03;
     lilyGroup.add(flower);
-    
+
     // Scale grow spring animation
     lilyGroup.scale.set(0.001, 0.001, 0.001);
     planetGroup.add(lilyGroup);
@@ -1397,10 +1397,10 @@ function initUI() {
     setTimeout(() => {
       loaderOverlay.classList.add('hidden');
       uiContainer.classList.remove('hidden');
-      
+
       setupAudio();
       toggleMusic();
-      
+
       // Pivot camera zoom-in transition
       gsap.from(camera.position, {
         x: 0,
@@ -1467,7 +1467,7 @@ function populateWishesPanel() {
 
   wishes.forEach(w => {
     const card = document.createElement('div');
-    
+
     let statusClass = 'unplanted';
     let statusText = 'Lying on grass';
     if (w.planted) {
@@ -1525,9 +1525,9 @@ function blowCandle() {
     if (flame) flame.visible = false;
     if (light) light.intensity = 0;
   }
-  
+
   triggerBirthdayConfetti();
-  
+
   const hint = document.getElementById('cake-blow-hint');
   hint.innerText = "Happy Birthday! Make all your dreams come true! 🌸";
 

@@ -4,8 +4,8 @@
 const DEFAULT_WISHES = [
   {
     id: "wish-1",
-    sender: "Sarah",
-    message: "Happy Birthday! Wishing you a year ahead full of love, laughter, and endless adventure! 🎂✨ You deserve all the happiness in the world.",
+    sender: "Aryan",
+    message: "Happy Birthday love! Wishing you a year ahead full of love, laughter, and endless adventure! 🎂✨ You deserve all the happiness in the world.",
     color: "pink",
     date: "June 24, 2026",
     collected: false,
@@ -18,8 +18,8 @@ const DEFAULT_WISHES = [
   },
   {
     id: "wish-2",
-    sender: "Mom & Dad",
-    message: "Watching you grow into such a beautiful, kind, and brilliant person is our life's greatest joy. Have a truly magical birthday! 💖🎈",
+    sender: "Gunnu",
+    message: "Happy birthday Oshupie, never thought time would bring us this close, but i’m forever grateful to have someone pure hearted like youuuu! never seen a pure soul like you & i mean it!!wishing you all the love & blessings from our side because you deserve it, actually you deserve the world.people like you are rare to find! we’re grateful we got youuu girlie🧿🩵",
     color: "white",
     date: "June 24, 2026",
     collected: false,
@@ -30,8 +30,8 @@ const DEFAULT_WISHES = [
   },
   {
     id: "wish-3",
-    sender: "Emma",
-    message: "To my best friend: thank you for being the one who makes me laugh when I want to cry. Cheers to another trip around the sun! 🥂🎉",
+    sender: "nooru",
+    message: "Happy Birthday to my smol siss!! love you so so much, love to annoy you even more:) thankyou for being the way you are and making life easier for us, here’s to growing up and old together😘 hbd lil bebu🤍🤍",
     color: "purple",
     date: "June 24, 2026",
     collected: false,
@@ -42,8 +42,8 @@ const DEFAULT_WISHES = [
   },
   {
     id: "wish-4",
-    sender: "David",
-    message: "Happy Birthday! May this year bring you closer to your dream horizons. Keep shining bright! 🌟",
+    sender: "Mom",
+    message: "Happy Birthday Oshupie! On your special day, I wish you a year filled with joy, success, and endless laughter. May you continue to spread your warmth and light to everyone around you. Keep shining bright! ✨💖",
     color: "gold",
     date: "June 24, 2026",
     collected: false,
